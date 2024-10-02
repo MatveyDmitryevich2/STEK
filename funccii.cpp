@@ -5,6 +5,7 @@
 #include <string.h>
 #include <ctype.h> 
 #include <assert.h>
+#include <stdint.h>
 
 // long long Stack_Hash(Stack_t* stk)
 // {
@@ -32,14 +33,29 @@
 //     return NET_OSHIBOK;
 // }
 
+enum Ochibki_Stacka StackProverkaKonoreek(Stack_t* stk)
+{
+    if((*(stk->array_data - 2) != KONOREYKA)             ||
+       (*(stk->array_data + stk->capacity) != KONOREYKA) ||
+       (stk->konoreyka_left != KONOREYKA)                ||
+       (stk->konoreyka_right != KONOREYKA)) return UKAZTENEL_NA_STRUKTURU_POEHAL;
+
+    return NET_OSHIBOK;
+}
+
 enum Ochibki_Stacka StackConstrtor(Stack_t* stk, size_t razmer)
 {
     if((stk) == NULL) return UKAZTENEL_NA_STRUKTURU_POEHAL;
 
     stk->capacity = razmer;
     stk->vacant_place = 0;
-    stk->array_data = (StackElem_t*)calloc(stk->capacity, sizeof(StackElem_t));
+    stk->array_data = (StackElem_t*)calloc(stk->capacity * sizeof(StackElem_t) + 2*sizeof(uint64_t), 1);
+    memcpy(stk->array_data, &KONOREYKA, sizeof(uint64_t));
+    //stk->array_data = (StackElem_t*)((char*)(stk->array_data + 2));
+    stk->array_data = (StackElem_t*)(stk->array_data + sizeof(uint64_t)/sizeof(StackElem_t));
+    memcpy(stk->array_data + stk->capacity, &KONOREYKA, sizeof(uint64_t));
 
+    if(StackProverkaKonoreek(stk) > 0) return StackProverkaKonoreek(stk);
     return StackError(stk);
 }
 
@@ -47,6 +63,7 @@ enum Ochibki_Stacka StackPush(Stack_t* stk, StackElem_t complement)
 {
     enum Ochibki_Stacka oshibka1 = StackError(stk);
     if(oshibka1 > 0) return oshibka1;
+    if(StackProverkaKonoreek(stk) > 0) return StackProverkaKonoreek(stk);
 
     if(stk->vacant_place == stk->capacity - 1)           
     {
@@ -57,12 +74,13 @@ enum Ochibki_Stacka StackPush(Stack_t* stk, StackElem_t complement)
     stk->vacant_place++;
 
     //printf("\n%lld\n", Stack_Hash(stk));
-
+    if(StackProverkaKonoreek(stk) > 0) return StackProverkaKonoreek(stk);
     return StackError(stk);
 }
 
 enum Ochibki_Stacka StackPop(Stack_t* stk, StackElem_t* last_recorded_value)
 {
+    if(StackProverkaKonoreek(stk) > 0) return StackProverkaKonoreek(stk);
     enum Ochibki_Stacka oshibka = StackError(stk);
     if(oshibka > 0) return oshibka;
     if((last_recorded_value) == NULL) return OSHIBKA_V_VINIMANII_ZNACHENIA_IS_STEKA;
@@ -70,11 +88,14 @@ enum Ochibki_Stacka StackPop(Stack_t* stk, StackElem_t* last_recorded_value)
     --stk->vacant_place;
     *last_recorded_value = stk->array_data[stk->vacant_place];
 
+    if(StackProverkaKonoreek(stk) > 0) return StackProverkaKonoreek(stk);
     return StackError(stk);
 }
 
 int StackDtor(Stack_t* stk)
 {
+    if(StackProverkaKonoreek(stk) > 0) return StackProverkaKonoreek(stk);
+
     enum Ochibki_Stacka oshibka = StackError(stk);
     if(oshibka > 0) return oshibka;
 
@@ -83,7 +104,7 @@ int StackDtor(Stack_t* stk)
         stk->array_data[i] = 0;
     }
     
-    free(stk->array_data);
+    free(stk->array_data - 2);
     stk->array_data = NULL;
 
     return 0;
@@ -114,10 +135,16 @@ enum Ochibki_Stacka StackError(Stack_t* stk)
 
 size_t StackRecalloc(Stack_t* stk)
 {
-    stk->array_data = (StackElem_t*)realloc(stk->array_data, stk->capacity * SHAG_V_REALOC * sizeof(StackElem_t));
+    stk->array_data = (StackElem_t*)(stk->array_data - 2);
+    stk->array_data = (StackElem_t*)realloc(stk->array_data, stk->capacity * SHAG_V_REALOC * sizeof(StackElem_t) + 2*sizeof(uint64_t));
     if((stk->array_data) == NULL) return UKAZTENEL_NA_MASSIV_POEHAL;
 
-    memset(stk->array_data + stk->capacity, 0, (stk->capacity * SHAG_V_REALOC - stk->capacity) * sizeof(StackElem_t));
+    stk->array_data = stk->array_data + 2;
+    size_t capacity_bufer = stk->capacity * SHAG_V_REALOC;
 
-    return stk->capacity * SHAG_V_REALOC;
+    memset(stk->array_data + stk->capacity, 0, (2 + stk->capacity) * sizeof(StackElem_t));
+
+    memcpy(stk->array_data + capacity_bufer, &KONOREYKA, sizeof(uint64_t));
+
+    return capacity_bufer;
 }
