@@ -35,7 +35,7 @@
 
 enum Ochibki_Stacka StackProverkaKonoreek(Stack_t* stk)
 {
-    if((*(stk->array_data - 2) != KONOREYKA)             ||
+    if((*(StackElem_t*)((char*)stk->array_data - 8) != KONOREYKA)             ||
        (*(stk->array_data + stk->capacity) != KONOREYKA) ||
        (stk->konoreyka_left != KONOREYKA)                ||
        (stk->konoreyka_right != KONOREYKA)) return UKAZTENEL_NA_STRUKTURU_POEHAL;
@@ -52,7 +52,7 @@ enum Ochibki_Stacka StackConstrtor(Stack_t* stk, size_t razmer)
     stk->array_data = (StackElem_t*)calloc(stk->capacity * sizeof(StackElem_t) + 2*sizeof(uint64_t), 1);
     memcpy(stk->array_data, &KONOREYKA, sizeof(uint64_t));
     //stk->array_data = (StackElem_t*)((char*)(stk->array_data + 2));
-    stk->array_data = (StackElem_t*)(stk->array_data + sizeof(uint64_t)/sizeof(StackElem_t));
+    stk->array_data = (StackElem_t*)((char*)stk->array_data + 8);
     memcpy(stk->array_data + stk->capacity, &KONOREYKA, sizeof(uint64_t));
 
     if(StackProverkaKonoreek(stk) > 0) return StackProverkaKonoreek(stk);
@@ -135,14 +135,14 @@ enum Ochibki_Stacka StackError(Stack_t* stk)
 
 size_t StackRecalloc(Stack_t* stk)
 {
-    stk->array_data = (StackElem_t*)(stk->array_data - 2);
+    stk->array_data = (StackElem_t*)((char*)stk->array_data - 8);
     stk->array_data = (StackElem_t*)realloc(stk->array_data, stk->capacity * SHAG_V_REALOC * sizeof(StackElem_t) + 2*sizeof(uint64_t));
     if((stk->array_data) == NULL) return UKAZTENEL_NA_MASSIV_POEHAL;
 
-    stk->array_data = stk->array_data + 2;
+    stk->array_data = (StackElem_t*)((char*)stk->array_data + 8);
     size_t capacity_bufer = stk->capacity * SHAG_V_REALOC;
 
-    memset(stk->array_data + stk->capacity, 0, (2 + stk->capacity) * sizeof(StackElem_t));
+    memset(stk->array_data + stk->capacity, 0, 8 + stk->capacity * sizeof(StackElem_t));
 
     memcpy(stk->array_data + capacity_bufer, &KONOREYKA, sizeof(uint64_t));
 

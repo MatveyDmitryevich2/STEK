@@ -6,9 +6,11 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include <stdint.h>
 
 typedef int StackElem_t;
 const int SHAG_V_REALOC = 2;
+const uint64_t KONOREYKA = 29304148;
 
 enum Ochibki_Stacka
 {
@@ -18,18 +20,24 @@ enum Ochibki_Stacka
     VACANTNOE_MESTO_POEHALO = 3,
     OSHIBKA_V_VINIMANII_ZNACHENIA_IS_STEKA = 4,
     UKAZTENEL_NA_BUFER_HASH_POEHAL = 5,
-    PIZDA_HAKERI_SPIZDILI_CHO_TO = 6
+    PIZDA_HAKERI_SPIZDILI_CHO_TO = 6,
+    KONREYKI_POEHALI = 7
 };
 
 struct Stack_t
 {
+    uint64_t konoreyka_left = KONOREYKA;
+
     StackElem_t* array_data;
     size_t vacant_place;
     size_t capacity;
+
+    uint64_t konoreyka_right = KONOREYKA;
 };
 
 //enum Ochibki_Stacka Sosi_Haker(Stack_t* stk, long long *bufer_hash);
 //long long Stack_Hash(Stack_t* stk);
+enum Ochibki_Stacka StackProverkaKonoreek(Stack_t* stk);
 enum Ochibki_Stacka StackConstrtor(Stack_t* stk, size_t razmer);
 enum Ochibki_Stacka StackPush(Stack_t* stk, StackElem_t complement);
 size_t StackRecalloc(Stack_t* stk);
