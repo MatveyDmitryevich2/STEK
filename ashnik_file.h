@@ -35,14 +35,21 @@ struct Stack_t
     uint64_t konoreyka_right = KONOREYKA;
 };
 
-//enum Ochibki_Stacka Sosi_Haker(Stack_t* stk, long long *bufer_hash);
-//long long Stack_Hash(Stack_t* stk);
+struct Hash_t
+{
+    uint64_t hash_nachalo;
+    uint64_t hash_konec;
+};
+
+//enum Ochibki_Stacka Sosi_Haker(Hash_t* hash_stuckt);
+uint64_t Stack_Hash(size_t razmer);
 enum Ochibki_Stacka StackProverkaKonoreek(Stack_t* stk);
 enum Ochibki_Stacka StackConstrtor(Stack_t* stk, size_t razmer);
-enum Ochibki_Stacka StackPush(Stack_t* stk, StackElem_t complement);
+enum Ochibki_Stacka StackPush(Stack_t* stk, StackElem_t complement, Hash_t* hash_stuckt);
 size_t StackRecalloc(Stack_t* stk);
-enum Ochibki_Stacka StackPop(Stack_t* stk, StackElem_t* last_recorded_value);
+enum Ochibki_Stacka StackPop(Stack_t* stk, StackElem_t* last_recorded_value, Hash_t* hash_stuckt);
 int StackDtor(Stack_t* stk);
 enum Ochibki_Stacka StackError(Stack_t* stk);
+void StackDump(Stack_t* stk);
 
 #endif
