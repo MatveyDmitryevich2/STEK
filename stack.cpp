@@ -7,10 +7,15 @@
 #include <assert.h>
 #include <stdint.h>
 
-//FIXME лучше uint8_t а не char
-//FIXME const char* а не char*
-uint64_t Stack_Hash(char* ukazatel, size_t razmer)
-{//FIXME assert
+
+
+uint64_t Stack_Hash(const uint8_t* ukazatel, size_t razmer)
+{
+    if ((ukazatel) == NULL) 
+    {
+        return UKAZTENEL_NA_STRUKTURU_POEHAL;
+    }
+
     uint64_t hash = 5381;
 
     for (size_t i = 0; i <= razmer; i++)
@@ -22,10 +27,10 @@ uint64_t Stack_Hash(char* ukazatel, size_t razmer)
 }
 
 enum Ochibki_Stacka StackProverkaKonoreek(Stack_t* stk)
-{//FIXME assert
+{
     if ((*(StackElem_t*)((char*)stk->array_data - sizeof(KONOREYKA)) != KONOREYKA) 
-       || (*(stk->array_data + stk->capacity) != KONOREYKA) //FIXME memcmp
        || (stk->konoreyka_left != KONOREYKA)                  
+       || (*(stk->array_data + stk->capacity) != KONOREYKA) //FIXME memcmp
        || (stk->konoreyka_right != KONOREYKA)) 
     {
        return UKAZTENEL_NA_STRUKTURU_POEHAL;
@@ -62,7 +67,7 @@ enum Ochibki_Stacka StackConstrtor(Stack_t* stk, size_t razmer)
         return err;
     }
 
-    return StackError(stk); //FIXME крос лайн
+    return StackError(stk);
 }
 
 enum Ochibki_Stacka StackPush(Stack_t* stk, StackElem_t complement)
@@ -136,7 +141,6 @@ enum Ochibki_Stacka StackPop(Stack_t* stk, StackElem_t* last_recorded_value)
 
     return StackError(stk);
 }
-// FIXME realloc вниз
 
 int StackDtor(Stack_t* stk)
 {
@@ -249,8 +253,8 @@ enum Ochibki_Stacka Proverka_Hasha_v_nachale_funccii(Stack_t* stk)
     stk->hash_strucktura = 0;
     stk->hash_massiv = 0;
 
-    if (bufer_hash_massiv != Stack_Hash((char*)stk->array_data, stk->capacity * sizeof(StackElem_t))
-        || bufer_hash_strucktura != Stack_Hash((char*)stk, sizeof(stk)))
+    if (bufer_hash_massiv != Stack_Hash((uint8_t*)stk->array_data, stk->capacity * sizeof(StackElem_t))
+        || bufer_hash_strucktura != Stack_Hash((uint8_t*)stk, sizeof(stk)))
     {
         return PIZDA_HAKERI_SPIZDILI_CHO_TO;
     }
@@ -269,8 +273,8 @@ enum Ochibki_Stacka Pereschot_Hasha_v_konce_funccii(Stack_t* stk)
     stk->hash_massiv = 0;
     stk->hash_strucktura = 0;
 
-    stk->hash_massiv = Stack_Hash((char*)stk->array_data, stk->capacity * sizeof(StackElem_t));
-    stk->hash_strucktura = Stack_Hash((char*)stk, sizeof(stk));
+    stk->hash_massiv = Stack_Hash((uint8_t*)stk->array_data, stk->capacity * sizeof(StackElem_t));
+    stk->hash_strucktura = Stack_Hash((uint8_t*)stk, sizeof(stk));
 
     return StackError(stk);
 }
