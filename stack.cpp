@@ -19,20 +19,6 @@ uint64_t Stack_Hash(char* ukazatel, size_t razmer)
     return hash;
 }
 
-// enum Ochibki_Stacka Sosi_Haker(Hash_t* hash_stuckt)
-// {
-//     // enum Ochibki_Stacka oshibka1 = StackError(stk);
-//     // if(oshibka1 > 0) return oshibka1;
-//     // if((stk) == NULL) return UKAZTENEL_NA_BUFER_HASH_POEHAL;
-
-//     if (hash_stuckt->hash_nachalo != hash_stuckt->hash_nachalo) 
-//     {
-//         return PIZDA_HAKERI_SPIZDILI_CHO_TO;
-//     }
-
-//     return NET_OSHIBOK;
-// }
-
 enum Ochibki_Stacka StackProverkaKonoreek(Stack_t* stk)
 {
     if ((*(StackElem_t*)((char*)stk->array_data - sizeof(KONOREYKA)) != KONOREYKA) 
@@ -162,7 +148,6 @@ int StackDtor(Stack_t* stk)
     {
         stk->array_data[i] = 0;
     }
-    
     free(stk->array_data - 2);
     stk->array_data = NULL;
 
@@ -174,6 +159,7 @@ enum Ochibki_Stacka StackError(Stack_t* stk)
     enum Ochibki_Stacka err = StackProverkaKonoreek(stk);
     if (err > 0)
     {
+        fprintf(stderr, "KONREYKI_POEHALI");
         return err;
     }
 
@@ -207,19 +193,17 @@ enum Ochibki_Stacka StackRecalloc(Stack_t* stk)
     }
 
     stk->array_data = (StackElem_t*)((char*)stk->array_data - sizeof(KONOREYKA));
-    stk->array_data = (StackElem_t*)realloc(stk->array_data, stk->capacity * SHAG_V_REALOC * sizeof(StackElem_t) + 2*sizeof(uint64_t));
+    stk->array_data = (StackElem_t*)realloc(stk->array_data, stk->capacity * SHAG_V_REALOC 
+                                                             * sizeof(StackElem_t) + 2*sizeof(uint64_t));
     if ((stk->array_data) == NULL)
     {
         return UKAZTENEL_NA_MASSIV_POEHAL;
     }
-
     stk->array_data = (StackElem_t*)((char*)stk->array_data + sizeof(KONOREYKA));
+
     size_t capacity_bufer = stk->capacity * SHAG_V_REALOC;
-
     memset(stk->array_data + stk->capacity, 0, sizeof(KONOREYKA) + stk->capacity * sizeof(StackElem_t));
-
     memcpy(stk->array_data + capacity_bufer, &KONOREYKA, sizeof(KONOREYKA));
-
     stk->capacity = capacity_bufer;
 
     return StackError(stk);
@@ -234,17 +218,16 @@ enum Ochibki_Stacka StackUmenshenieRealloc(Stack_t* stk)
     }
     
     stk->array_data = (StackElem_t*)((char*)stk->array_data - sizeof(KONOREYKA));
-    stk->array_data = (StackElem_t*)realloc(stk->array_data, (stk->capacity / OBRATNIY_SHAG_V_REALOC) * sizeof(StackElem_t) + 2*sizeof(uint64_t));
+    stk->array_data = (StackElem_t*)realloc(stk->array_data, (stk->capacity / OBRATNIY_SHAG_V_REALOC) 
+                                                             * sizeof(StackElem_t) + 2*sizeof(uint64_t));
     if ((stk->array_data) == NULL)
     {
         return UKAZTENEL_NA_MASSIV_POEHAL;
     }
     stk->array_data = (StackElem_t*)((char*)stk->array_data + sizeof(KONOREYKA));
-    size_t capacity_bufer = stk->capacity / OBRATNIY_SHAG_V_REALOC;
+    stk->capacity = stk->capacity / OBRATNIY_SHAG_V_REALOC;
 
-    memcpy(stk->array_data + capacity_bufer, &KONOREYKA, sizeof(KONOREYKA));
-
-    stk->capacity = capacity_bufer;
+    memcpy(stk->array_data + stk->capacity, &KONOREYKA, sizeof(KONOREYKA));
 
     return StackError(stk);
 }
@@ -296,11 +279,16 @@ enum Ochibki_Stacka StackDump(Stack_t* stk)
         return oshibka;
     }
     
-    fprintf(stderr, "\nЛевая конорейка структуры = %lu\nАдрес левой конорейки структуры = %p", stk->konoreyka_left, &stk->konoreyka_left);
+    fprintf(stderr, "\nЛевая конорейка структуры = %lu\nАдрес левой конорейки структуры = %p",
+                     stk->konoreyka_left, &stk->konoreyka_left);
     fprintf(stderr, "\nАдрес начала массива = %p", (char*)stk->array_data - sizeof(KONOREYKA));
-    fprintf(stderr, "\nЛевая конорейка массива = %lu\nАдрес левой конорейки массива = %p", (long unsigned)*(StackElem_t*)((char*)stk->array_data - sizeof(KONOREYKA)), ((StackElem_t*)((char*)stk->array_data - sizeof(uint64_t))));
-    fprintf(stderr, "\nРазмер массива в StackElem_t = %lu", (stk->capacity * sizeof(StackElem_t) + 2*sizeof(KONOREYKA)) / sizeof(StackElem_t));
-    fprintf(stderr, "\nРазмер массива в байтах = %lu", stk->capacity * sizeof(StackElem_t) + 2*sizeof(KONOREYKA));
+    fprintf(stderr, "\nЛевая конорейка массива = %lu\nАдрес левой конорейки массива = %p", 
+                     (long unsigned)*(StackElem_t*)((char*)stk->array_data - sizeof(KONOREYKA)),
+                     ((StackElem_t*)((char*)stk->array_data - sizeof(uint64_t))));
+    fprintf(stderr, "\nРазмер массива в StackElem_t = %lu", (stk->capacity * sizeof(StackElem_t) 
+                                                             + 2*sizeof(KONOREYKA)) / sizeof(StackElem_t));
+    fprintf(stderr, "\nРазмер массива в байтах = %lu", stk->capacity * sizeof(StackElem_t) 
+                                                       + 2*sizeof(KONOREYKA));
     fprintf(stderr, "\nАдрес начала стека = %p", stk->array_data);
     fprintf(stderr, "\nРазмер стека в StackElem_t = %lu", stk->vacant_place);
     fprintf(stderr, "\nРазмер стека в байтах = %lu\n", stk->vacant_place * sizeof(StackElem_t));
@@ -312,9 +300,12 @@ enum Ochibki_Stacka StackDump(Stack_t* stk)
     }
     fprintf(stderr,"}");
     fprintf(stderr, "\nАдрес конца стека = %p", stk->array_data + stk->vacant_place);
-    fprintf(stderr, "\nПравая конорейка массива = %lu\nАдрес правой конорейки массива = %p", (long unsigned)*(stk->array_data + stk->capacity), stk->array_data + stk->capacity);
-    fprintf(stderr, "\nАдрес конца массива = %p", (char*)(stk->array_data + stk->capacity) + sizeof(KONOREYKA));
-    fprintf(stderr, "\nПравая конорейка структуры = %lu\nАдрес правой конорейки структуры = %p\n", stk->konoreyka_right, &stk->konoreyka_right);
+    fprintf(stderr, "\nПравая конорейка массива = %lu\nАдрес правой конорейки массива = %p",
+                     (long unsigned)*(stk->array_data + stk->capacity), stk->array_data + stk->capacity);
+    fprintf(stderr, "\nАдрес конца массива = %p", (char*)(stk->array_data + stk->capacity) 
+                                                  + sizeof(KONOREYKA));
+    fprintf(stderr, "\nПравая конорейка структуры = %lu\nАдрес правой конорейки структуры = %p\n",
+                     stk->konoreyka_right, &stk->konoreyka_right);
 
     return StackError(stk);
 }
