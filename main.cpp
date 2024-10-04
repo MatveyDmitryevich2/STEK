@@ -12,7 +12,7 @@ int main(void) //сделать чтобы память уменьшалась �
     Stack_t stk = {};
 
     //fprintf(stderr, "%d\n", StackConstrtor(&stk, 2));
-    if(StackConstrtor(&stk, 2) > 0) assert(0);
+    if (StackConstrtor(&stk, 2) > 0) assert(0);
     
     if (StackPush(&stk, 13) > 0) assert(0);
     if (StackPush(&stk, 5) > 0) assert(0);

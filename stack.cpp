@@ -7,8 +7,10 @@
 #include <assert.h>
 #include <stdint.h>
 
+//FIXME лучше uint8_t а не char
+//FIXME const char* а не char*
 uint64_t Stack_Hash(char* ukazatel, size_t razmer)
-{
+{//FIXME assert
     uint64_t hash = 5381;
 
     for (size_t i = 0; i <= razmer; i++)
@@ -20,10 +22,10 @@ uint64_t Stack_Hash(char* ukazatel, size_t razmer)
 }
 
 enum Ochibki_Stacka StackProverkaKonoreek(Stack_t* stk)
-{
+{//FIXME assert
     if ((*(StackElem_t*)((char*)stk->array_data - sizeof(KONOREYKA)) != KONOREYKA) 
-       || (*(stk->array_data + stk->capacity) != KONOREYKA)          
-       || (stk->konoreyka_left != KONOREYKA)                         
+       || (*(stk->array_data + stk->capacity) != KONOREYKA) //FIXME memcmp
+       || (stk->konoreyka_left != KONOREYKA)                  
        || (stk->konoreyka_right != KONOREYKA)) 
     {
        return UKAZTENEL_NA_STRUKTURU_POEHAL;
@@ -70,28 +72,28 @@ enum Ochibki_Stacka StackPush(Stack_t* stk, StackElem_t complement)
     {
         return oshibka1;
     }
-    enum Ochibki_Stacka err = Proverka_Hasha_v_nachale_funccii(stk);
-    if (err > 0)
+    oshibka1 = Proverka_Hasha_v_nachale_funccii(stk);
+    if (oshibka1 > 0)
     {
-        return err;
+        return oshibka1;
     }
 
     if (stk->vacant_place == stk->capacity)           
     {
-        err = StackRecalloc(stk);
-        if (err > 0)
+        oshibka1 = StackRecalloc(stk);
+        if (oshibka1 > 0)
         {
-            return err;
+            return oshibka1;
         }
     }
 
     stk->array_data[stk->vacant_place] = complement;
     stk->vacant_place++;
 
-    err = Pereschot_Hasha_v_konce_funccii(stk);
-    if (err > 0)
+    oshibka1 = Pereschot_Hasha_v_konce_funccii(stk);
+    if (oshibka1 > 0)
     {
-        return err;
+        return oshibka1;
     }
 
     return StackError(stk);
@@ -104,7 +106,7 @@ enum Ochibki_Stacka StackPop(Stack_t* stk, StackElem_t* last_recorded_value)
     {
         return oshibka;
     }
-    if ((last_recorded_value) == NULL) 
+    if (last_recorded_value == NULL) 
     {
         return OSHIBKA_V_VINIMANII_ZNACHENIA_IS_STEKA;
     }
@@ -117,7 +119,7 @@ enum Ochibki_Stacka StackPop(Stack_t* stk, StackElem_t* last_recorded_value)
     --stk->vacant_place;
     *last_recorded_value = stk->array_data[stk->vacant_place];
 
-    if (stk->vacant_place <= stk->capacity/4)
+    if (stk->vacant_place <= stk->capacity / OBRATNIY_SHAG_V_REALOC)
     {
         err = StackUmenshenieRealloc(stk);
         if (err > 0)
@@ -156,6 +158,8 @@ int StackDtor(Stack_t* stk)
 
 enum Ochibki_Stacka StackError(Stack_t* stk)
 {
+    //FIXME Proverka_Hasha_v_nachale_funccii вызов
+
     enum Ochibki_Stacka err = StackProverkaKonoreek(stk);
     if (err > 0)
     {
